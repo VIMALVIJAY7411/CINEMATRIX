@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CINEMATRIX • Admin Studio</title>
+  <style>
+    :root {
+      --bg-dark: #0D0D0D;
+      --bg-panel: #151515;
+      --bg-input: #202020;
+      --accent-red: #E50914;
+      --accent-red-hover: #F40612;
+      --text-primary: #FFFFFF;
+      --text-secondary: #A3A3A3;
+      --border-subtle: rgba(255, 255, 255, 0.12);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+    body { background: var(--bg-dark); color: var(--text-primary); min-height: 100vh; }
+    .admin-nav {
+      height: 68px; padding: 0 4%; background: #111111; border-bottom: 1px solid var(--border-subtle);
+      display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50;
+    }
+    .brand-logo { display: flex; align-items: center; gap: 10px; }
+    .c-emblem {
+      width: 34px; height: 34px; background: var(--accent-red); color: #FFF; font-weight: 900; font-size: 22px;
+      display: flex; align-items: center; justify-content: center; border-radius: 6px;
+    }
+    .brand-text { color: var(--accent-red); font-size: 22px; font-weight: 900; letter-spacing: 3px; text-transform: uppercase; }
+    .admin-badge {
+      background: rgba(229, 9, 20, 0.18); border: 1px solid var(--accent-red); color: #FFF;
+      font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 4px; letter-spacing: 1px;
+    }
+    .nav-actions { display: flex; gap: 12px; }
+    .btn {
+      padding: 9px 18px; border-radius: 6px; font-size: 13px; font-weight: 700; border: none; cursor: pointer;
+      text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
+    }
+    .btn-outline { background: rgba(255, 255, 255, 0.08); color: #FFF; border: 1px solid var(--border-subtle); }
+    .btn-outline:hover { background: rgba(255, 255, 255, 0.16); }
+    .btn-red { background: var(--accent-red); color: #FFF; }
+    .btn-red:hover { background: var(--accent-red-hover); }
+    .admin-container {
+      max-width: 1280px; margin: 0 auto; padding: 32px 4%;
+      display: grid; grid-template-columns: 420px 1fr; gap: 28px;
+    }
+    .panel { background: var(--bg-panel); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 24px; }
+    .panel h2 { font-size: 18px; font-weight: 800; margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between; }
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-size: 12px; font-weight: 700; color: var(--text-secondary); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .form-control {
+      width: 100%; background: var(--bg-input); border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #FFF; padding: 11px 12px; border-radius: 6px; font-size: 14px; outline: none;
+    }
+    .form-control:focus { border-color: var(--accent-red); }
+    .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 22px; }
+    .stat-card { background: #1A1A1A; border: 1px solid var(--border-subtle); border-radius: 8px; padding: 16px; }
+    .stat-card span { font-size: 12px; color: var(--text-secondary); display: block; margin-bottom: 4px; }
+    .stat-card strong { font-size: 24px; font-weight: 900; color: #FFF; }
+    .catalog-list { display: flex; flex-direction: column; gap: 12px; }
+    .catalog-item {
+      display: flex; align-items: center; justify-content: space-between; background: #1B1B1B;
+      border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; padding: 12px; gap: 14px;
+    }
+    .item-left { display: flex; align-items: center; gap: 14px; }
+    .item-thumb { width: 48px; height: 68px; object-fit: cover; border-radius: 4px; background: #000; }
+    .item-info h4 { font-size: 15px; font-weight: 800; margin-bottom: 4px; }
+    .item-meta { font-size: 12px; color: var(--text-secondary); display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .tag-16 { border: 1px solid var(--accent-red); color: #FFF; padding: 1px 5px; border-radius: 3px; font-size: 11px; font-weight: 700; }
+    .item-actions { display: flex; gap: 8px; }
+    .btn-sm { padding: 6px 10px; font-size: 12px; border-radius: 4px; border: none; cursor: pointer; font-weight: 700; }
+    .btn-edit { background: rgba(255, 255, 255, 0.14); color: #FFF; }
+    .btn-del { background: rgba(229, 9, 20, 0.22); color: #FF6B6B; border: 1px solid rgba(229, 9, 20, 0.4); }
+    @media (max-width: 960px) { .admin-container { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <header class="admin-nav">
+    <div class="brand-logo">
+      <div class="c-emblem">C</div>
+      <span class="brand-text">CINEMATRIX</span>
+      <span class="admin-badge">ADMIN STUDIO</span>
+    </div>
+    <div class="nav-actions">
+      <button class="btn btn-outline" onclick="resetDefaultCatalog()">↺ Reset Defaults</button>
+      <a href="index.html" target="_blank" class="btn btn-red">↗ Launch Live App</a>
+    </div>
+  </header>
+
+  <main class="admin-container">
+    <section class="panel">
+      <h2 id="formTitleHeading">Publish New Title</h2>
+      <form id="movieForm" onsubmit="saveMovie(event)">
+        <input type="hidden" id="editId" />
+        <div class="form-group">
+          <label>Movie / Series Title</label>
+          <input type="text" id="fTitle" class="form-control" placeholder="e.g., JANA NAYAGAN" required />
+        </div>
+        <div class="form-row-2">
+          <div class="form-group">
+            <label>Release Year</label>
+            <input type="text" id="fYear" class="form-control" value="2026" required />
+          </div>
+          <div class="form-group">
+            <label>Maturity Rating</label>
+            <select id="fAge" class="form-control">
+              <option value="16+" selected>16+</option>
+              <option value="18+">18+</option>
+              <option value="13+">13+</option>
+              <option value="U/A">U/A</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row-2">
+          <div class="form-group">
+            <label>Duration</label>
+            <input type="text" id="fDuration" class="form-control" placeholder="2h 45m" required />
+          </div>
+          <div class="form-group">
+            <label>Row Placement</label>
+            <select id="fCategory" class="form-control">
+              <option value="trending">Trending Blockbusters</option>
+              <option value="continue">Continue Watching Row</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Cast</label>
+          <input type="text" id="fCast" class="form-control" placeholder="Actor 1, Actor 2..." required />
+        </div>
+        <div class="form-group">
+          <label>Director &amp; Genres</label>
+          <div class="form-row-2">
+            <input type="text" id="fDirector" class="form-control" placeholder="Director" required />
+            <input type="text" id="fGenres" class="form-control" placeholder="Action, Thriller" required />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Portrait Poster URL (2:3 Vertical)</label>
+          <input type="url" id="fPoster" class="form-control" placeholder="https://..." required />
+        </div>
+        <div class="form-group">
+          <label>Landscape Hover Banner URL (16:9 Wide)</label>
+          <input type="url" id="fLandscape" class="form-control" placeholder="https://..." required />
+        </div>
+        <div class="form-group">
+          <label>Stream Video MP4 URL (Optional)</label>
+          <input type="url" id="fVideo" class="form-control" placeholder="https://.../movie.mp4" />
+        </div>
+        <div class="form-group">
+          <label>Synopsis</label>
+          <textarea id="fSynopsis" class="form-control" rows="3" placeholder="Short description shown on hover card & modal..." required></textarea>
+        </div>
+        <div style="display:flex; gap:10px;">
+          <button type="submit" class="btn btn-red" style="flex:1; justify-content:center;" id="submitBtn">Publish to CINEMATRIX</button>
+          <button type="button" class="btn btn-outline" id="cancelEditBtn" style="display:none;" onclick="cancelEdit()">Cancel</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="panel">
+      <h2>
+        <span>Catalog Library</span>
+        <span style="font-size:12px; color:#46D369; font-weight:600;">● Synced with index.html</span>
+      </h2>
+      <div class="stats-grid">
+        <div class="stat-card"><span>Total Titles</span><strong id="statTotal">0</strong></div>
+        <div class="stat-card"><span>Continue Watching</span><strong id="statContinue">0</strong></div>
+        <div class="stat-card"><span>16+ Rated</span><strong id="stat16">0</strong></div>
+      </div>
+      <div class="catalog-list" id="adminCatalogList"></div>
+    </section>
+  </main>
+
+  <script>
+    const STORAGE_KEY = 'cinematrix_catalog_v1';
+
+    const DEFAULT_CATALOG = [
+      {
+        id: 'leo',
+        title: 'LEO: BLOODY SWEET',
+        match: '98% Match',
+        year: '2026',
+        age: '16+',
+        duration: '2h 44m',
+        progress: 68,
+        cast: 'Thalapathy Vijay, Trisha, Arjun Sarja, Sanjay Dutt',
+        director: 'Lokesh Kanagaraj',
+        genres: 'Action Thriller, Crime Drama',
+        synopsis: 'A mild-mannered cafe owner in a quiet hill town has his peaceful life shattered when a ruthless cartel traces a violent past straight to his doorstep.',
+        poster: 'https://images.unsplash.com/photo-1509347528160-9a9e33742cdb?auto=format&fit=crop&w=500&q=80',
+        landscape: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&w=900&q=80',
+        videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4',
+        category: 'continue'
+      },
+      {
+        id: 'vikram',
+        title: 'VIKRAM: ROLEX FILES',
+        match: '96% Match',
+        year: '2026',
+        age: '16+',
+        duration: '2h 55m',
+        progress: 42,
+        cast: 'Kamal Haasan, Vijay Sethupathi, Fahadh Faasil, Suriya',
+        director: 'Lokesh Kanagaraj',
+        genres: 'Action, Espionage, Neo-Noir',
+        synopsis: 'A black-ops squad tracks a syndicate of masked vigilantes while an underworld kingpin declares an all-out war across the coast.',
+        poster: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=500&q=80',
+        landscape: 'https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&w=900&q=80',
+        videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4',
+        category: 'continue'
+      },
+      {
+        id: 'jana',
+        title: 'JANA NAYAGAN',
+        match: '99% Match',
+        year: '2026',
+        age: '16+',
+        duration: '2h 50m',
+        progress: 82,
+        cast: 'Thalapathy Vijay, Pooja Hegde, Bobby Deol',
+        director: 'H. Vinoth',
+        genres: 'Political Action, Drama',
+        synopsis: 'One man stands against a corrupt syndicate to ignite a grassroots uprising that reshapes the fate of an entire state.',
+        poster: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=500&q=80',
+        landscape: 'https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=900&q=80',
+        videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4',
+        category: 'continue'
+      },
+      {
+        id: 'super-mario-odyssey',
+        title: 'SUPER MARIO: GALAXY QUEST',
+        match: '99% Match',
+        year: '2026',
+        age: 'U/A',
+        duration: '1h 52m',
+        progress: 40,
+        cast: 'Mario, Luigi, Princess Peach, Bowser',
+        director: 'Aaron Horvath',
+        genres: 'Adventure, Animation, Comedy',
+        synopsis: 'Two brothers leap through warp pipes across vibrant kingdoms to rescue their friends and outsmart a fire-breathing tyrant.',
+        poster: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=500&q=80',
+        landscape: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=900&q=80',
+        videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4',
+        category: 'continue'
+      },
+      {
+        id: 'toxic',
+        title: 'TOXIC: RAYA',
+        match: '97% Match',
+        year: '2026',
+        age: '16+',
+        duration: '2h 38m',
+        progress: 0,
+        cast: 'Yash, Kiara Advani, Nayanthara',
+        director: 'Geetu Mohandas',
+        genres: 'Gangster Crime, Action',
+        synopsis: 'Set against the coastal underworld, a feared syndicate boss navigates betrayal, turf wars, and ruthless ambition.',
+        poster: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=500&q=80',
+        landscape: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=900&q=80',
+        videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4',
+        category: 'trending'
+      },
+      {
+        id: 'jungle-chronicles',
+        title: 'CHRONICLES OF THE WILD',
+        match: '95% Match',
+        year: '2026',
+        age: 'U/A',
+        duration: '1h 45m',
+        progress: 0,
+        cast: 'Aarav, Meera, Captain Simba',
+        director: 'Nitesh Tiwari',
+        genres: 'Family Adventure, Drama',
+        synopsis: 'A young explorer and her loyal animal companions decode an ancient map hidden deep inside the Western Ghats.',
+        poster: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=500&q=80',
+        landscape: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80',
+        videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4',
+        category: 'trending'
+      }
+    ];
+
+    function getCatalog() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (!saved) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_CATALOG));
+        return DEFAULT_CATALOG;
+      }
+      return JSON.parse(saved);
+    }
+
+    function setCatalog(data) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      renderAdminList();
+    }
+
+    async function saveMovie(e) {
+      e.preventDefault();
+      const catalog = getCatalog();
+      const editId = document.getElementById('editId').value;
+
+      const movieObj = {
+        id: editId || 'cm_' + Date.now(),
+        title: document.getElementById('fTitle').value.trim().toUpperCase(),
+        match: '97% Match',
+        year: document.getElementById('fYear').value.trim(),
+        age: document.getElementById('fAge').value,
+        duration: document.getElementById('fDuration').value.trim(),
+        progress: document.getElementById('fCategory').value === 'continue' ? 35 : 0,
+        cast: document.getElementById('fCast').value.trim(),
+        director: document.getElementById('fDirector').value.trim(),
+        genres: document.getElementById('fGenres').value.trim(),
+        poster: document.getElementById('fPoster').value.trim(),
+        landscape: document.getElementById('fLandscape').value.trim(),
+        videoUrl: document.getElementById('fVideo').value.trim() || 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4',
+        synopsis: document.getElementById('fSynopsis').value.trim(),
+        category: document.getElementById('fCategory').value,
+        createdAt: Date.now()
+      };
+
+      if (window.CinematrixCloud) {
+        await window.CinematrixCloud.saveMovie(movieObj);
+      }
+
+      const idx = catalog.findIndex(m => m.id === movieObj.id);
+      if (idx !== -1) catalog[idx] = movieObj;
+      else catalog.unshift(movieObj);
+
+      setCatalog(catalog);
+      cancelEdit();
+    }
+
+    function editMovie(id) {
+      const item = getCatalog().find(m => m.id === id);
+      if (!item) return;
+      document.getElementById('editId').value = item.id;
+      document.getElementById('fTitle').value = item.title;
+      document.getElementById('fYear').value = item.year;
+      document.getElementById('fAge').value = item.age;
+      document.getElementById('fDuration').value = item.duration;
+      document.getElementById('fCategory').value = item.category;
+      document.getElementById('fCast').value = item.cast;
+      document.getElementById('fDirector').value = item.director;
+      document.getElementById('fGenres').value = item.genres;
+      document.getElementById('fPoster').value = item.poster;
+      document.getElementById('fLandscape').value = item.landscape;
+      document.getElementById('fVideo').value = item.videoUrl || '';
+      document.getElementById('fSynopsis').value = item.synopsis;
+      document.getElementById('formTitleHeading').textContent = 'Edit Title';
+      document.getElementById('submitBtn').textContent = 'Save Changes';
+      document.getElementById('cancelEditBtn').style.display = 'inline-flex';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function cancelEdit() {
+      document.getElementById('movieForm').reset();
+      document.getElementById('editId').value = '';
+      document.getElementById('formTitleHeading').textContent = 'Publish New Title';
+      document.getElementById('submitBtn').textContent = 'Publish to CINEMATRIX';
+      document.getElementById('cancelEditBtn').style.display = 'none';
+    }
+
+    async function deleteMovie(id) {
+      if (window.CinematrixCloud) {
+        await window.CinematrixCloud.removeMovie(id);
+      }
+      setCatalog(getCatalog().filter(m => m.id !== id));
+    }
+
+    function resetDefaultCatalog() {
+      setCatalog(DEFAULT_CATALOG);
+    }
+
+    function renderAdminList() {
+      const list = getCatalog();
+      document.getElementById('statTotal').textContent = list.length;
+      document.getElementById('statContinue').textContent = list.filter(m => m.category === 'continue').length;
+      document.getElementById('stat16').textContent = list.filter(m => m.age === '16+').length;
+
+      const container = document.getElementById('adminCatalogList');
+      container.innerHTML = list.map(m => `
+        <div class="catalog-item">
+          <div class="item-left">
+            <img class="item-thumb" src="${m.poster}" alt="${m.title}" />
+            <div class="item-info">
+              <h4>${m.title}</h4>
+              <div class="item-meta">
+                <span class="tag-16">${m.age}</span>
+                <span>${m.year}</span>
+                <span>• ${m.duration}</span>
+                <span>• ${m.category === 'continue' ? 'Continue Watching' : 'Trending'}</span>
+              </div>
+            </div>
+          </div>
+          <div class="item-actions">
+            <button class="btn-sm btn-edit" onclick="editMovie('${m.id}')">Edit</button>
+            <button class="btn-sm btn-del" onclick="deleteMovie('${m.id}')">Delete</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    renderAdminList();
+  </script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+{
+  "name": "cinematrix",
+  "version": "1.0.0",
+  "description": "CINEMATRIX Streaming Platform Android App",
+  "scripts": {
+    "cap:init": "npx cap add android && npx cap sync android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.1.2",
+    "@capacitor/core": "^6.1.2",
+    "@capacitor/splash-screen": "^6.0.2"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^6.1.2",
+    "sharp": "^0.33.5"
+  }
+}
